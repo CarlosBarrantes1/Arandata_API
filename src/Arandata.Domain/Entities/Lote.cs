@@ -14,5 +14,6 @@ namespace Arandata.Domain.Entities
         public decimal? Hectareas { get; set; }
 
         public ICollection<Cosecha> Cosechas { get; set; } = new List<Cosecha>();
+        public ICollection<Poda> Podas { get; set; } = new List<Poda>();
     }
 }

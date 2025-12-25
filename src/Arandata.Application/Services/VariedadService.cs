@@ -26,7 +26,7 @@ namespace Arandata.Application.Services
         {
             var entity = _mapper.Map<Variedad>(dto);
             await _repository.AddAsync(entity);
-            _unitOfWork.Commit();
+            await _unitOfWork.CommitAsync();
             return _mapper.Map<VariedadDto>(entity);
         }
 
@@ -35,7 +35,7 @@ namespace Arandata.Application.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return;
             await _repository.DeleteAsync(entity);
-            _unitOfWork.Commit();
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<IEnumerable<VariedadDto>> GetAllAsync()
@@ -56,7 +56,7 @@ namespace Arandata.Application.Services
             if (entity == null) return;
             _mapper.Map(dto, entity);
             await _repository.UpdateAsync(entity);
-            _unitOfWork.Commit();
+            await _unitOfWork.CommitAsync();
         }
     }
 }

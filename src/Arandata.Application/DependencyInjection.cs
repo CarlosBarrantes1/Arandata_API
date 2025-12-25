@@ -16,10 +16,6 @@ namespace Arandata.Application
             services.AddScoped<IVariedadService, VariedadService>();
             services.AddScoped<ILoteService, LoteService>();
             services.AddScoped<ICosechaService, CosechaService>();
-            services.AddScoped<IMuestra100Service, Muestra100Service>();
-            services.AddScoped<IBaya100Service, Baya100Service>();
-            services.AddScoped<IMuestraBrixService, MuestraBrixService>();
-            services.AddScoped<IBayaBrixService, BayaBrixService>();
 
             return services;
         }

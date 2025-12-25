@@ -14,7 +14,5 @@ namespace Arandata.Domain.Entities
         public decimal? KgPlantaAcumulado { get; set; }
         public int? DiasDespuesPoda { get; set; }
 
-        public ICollection<Muestra100> Muestras100 { get; set; } = new List<Muestra100>();
-        public ICollection<MuestraBrix> MuestrasBrix { get; set; } = new List<MuestraBrix>();
     }
 }

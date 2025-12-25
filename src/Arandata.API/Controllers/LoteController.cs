@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Arandata.Application.Interfaces;
 using Arandata.Application.DTOs.Lote;
 using System.Threading.Tasks;
+using Arandata.Infrastructure.Persistence.Context;
+using Arandata.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Arandata.API.Controllers
 {
@@ -10,10 +13,12 @@ namespace Arandata.API.Controllers
     public class LoteController : ControllerBase
     {
         private readonly ILoteService _service;
+        private readonly ApplicationDbContext _context;
 
-        public LoteController(ILoteService service)
+        public LoteController(ILoteService service, ApplicationDbContext context)
         {
             _service = service;
+            _context = context;
         }
 
         [HttpGet]
@@ -31,7 +36,19 @@ namespace Arandata.API.Controllers
         public async Task<IActionResult> Create(CreateLoteDto dto)
         {
             var created = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = created.IdLote }, created);
+
+            // Lógica Senior: Si el lote tiene fecha de poda inicial, registrarla en la tabla Podas automáticamente
+            if (dto.FechaPoda.HasValue)
+            {
+                var podaExistente = await _context.Podas.AnyAsync(p => p.LoteId == created.idLote && p.FechaPoda == dto.FechaPoda.Value);
+                if (!podaExistente)
+                {
+                    _context.Podas.Add(new Poda { LoteId = created.idLote, FechaPoda = dto.FechaPoda.Value });
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return CreatedAtAction(nameof(Get), new { id = created.idLote }, created);
         }
 
         [HttpPut("{id}")]

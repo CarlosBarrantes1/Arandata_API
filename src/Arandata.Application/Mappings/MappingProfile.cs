@@ -3,10 +3,6 @@ using AutoMapper;
 using Arandata.Application.DTOs.Variedad;
 using Arandata.Application.DTOs.Lote;
 using Arandata.Application.DTOs.Cosecha;
-using Arandata.Application.DTOs.Muestra100;
-using Arandata.Application.DTOs.Baya100;
-using Arandata.Application.DTOs.MuestraBrix;
-using Arandata.Application.DTOs.BayaBrix;
 using Arandata.Domain.Entities;
 
 namespace Arandata.Application.Mappings
@@ -18,33 +14,36 @@ namespace Arandata.Application.Mappings
             // Book and Loan mappings removed
 
             // Agricultura mappings
-            CreateMap<Variedad, VariedadDto>();
+            CreateMap<Variedad, VariedadDto>()
+                .ForMember(dest => dest.IdVariedad, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.DensidadPlantas, opt => opt.MapFrom(src => src.DensidadPlantas))
+                .ForMember(dest => dest.PlantasPorVariedad, opt => opt.MapFrom(src => src.PlantasPorVariedad));
             CreateMap<CreateVariedadDto, Variedad>();
             CreateMap<UpdateVariedadDto, Variedad>();
 
-            CreateMap<Lote, LoteDto>();
-            CreateMap<CreateLoteDto, Lote>();
-            CreateMap<UpdateLoteDto, Lote>();
+            CreateMap<Lote, LoteDto>()
+                .ForMember(dest => dest.idLote, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.variedadId, opt => opt.MapFrom(src => src.VariedadId));
+            CreateMap<CreateLoteDto, Lote>()
+                .ForMember(dest => dest.VariedadId, opt => opt.MapFrom(src => src.VariedadId));
+            CreateMap<UpdateLoteDto, Lote>()
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.VariedadId, opt => opt.MapFrom(src => src.variedadId))
+                .ForMember(dest => dest.FechaSiembra, opt => opt.MapFrom(src => src.FechaSiembra))
+                .ForMember(dest => dest.FechaPoda, opt => opt.MapFrom(src => src.FechaPoda))
+                .ForMember(dest => dest.PlantasTotales, opt => opt.MapFrom(src => src.PlantasTotales))
+                .ForMember(dest => dest.Hectareas, opt => opt.MapFrom(src => src.Hectareas));
 
-            CreateMap<Cosecha, CosechaDto>();
-            CreateMap<CreateCosechaDto, Cosecha>();
+            CreateMap<Cosecha, CosechaDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.LoteId, opt => opt.MapFrom(src => src.LoteId))
+                .ForMember(dest => dest.NombreVariedad, opt => opt.MapFrom(src => src.Lote != null && src.Lote.Variedad != null ? src.Lote.Variedad.Nombre : null));
+            CreateMap<CreateCosechaDto, Cosecha>()
+                .ForMember(dest => dest.LoteId, opt => opt.MapFrom(src => src.LoteId));
             CreateMap<UpdateCosechaDto, Cosecha>();
 
-            CreateMap<Muestra100, Muestra100Dto>();
-            CreateMap<CreateMuestra100Dto, Muestra100>();
-            CreateMap<UpdateMuestra100Dto, Muestra100>();
 
-            CreateMap<Baya100, Baya100Dto>();
-            CreateMap<CreateBaya100Dto, Baya100>();
-            CreateMap<UpdateBaya100Dto, Baya100>();
-
-            CreateMap<MuestraBrix, MuestraBrixDto>();
-            CreateMap<CreateMuestraBrixDto, MuestraBrix>();
-            CreateMap<UpdateMuestraBrixDto, MuestraBrix>();
-
-            CreateMap<BayaBrix, BayaBrixDto>();
-            CreateMap<CreateBayaBrixDto, BayaBrix>();
-            CreateMap<UpdateBayaBrixDto, BayaBrix>();
         }
     }
 }

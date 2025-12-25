@@ -12,23 +12,42 @@ namespace Arandata.Infrastructure.Persistence.Context
         public DbSet<Arandata.Domain.Entities.Variedad> Variedades { get; set; } = null!;
         public DbSet<Arandata.Domain.Entities.Lote> Lotes { get; set; } = null!;
         public DbSet<Arandata.Domain.Entities.Cosecha> Cosechas { get; set; } = null!;
-        public DbSet<Arandata.Domain.Entities.Muestra100> Muestras100 { get; set; } = null!;
-        public DbSet<Arandata.Domain.Entities.Baya100> Bayas100 { get; set; } = null!;
-        public DbSet<Arandata.Domain.Entities.MuestraBrix> MuestrasBrix { get; set; } = null!;
-        public DbSet<Arandata.Domain.Entities.BayaBrix> BayasBrix { get; set; } = null!;
+        public DbSet<Muestra> Muestras { get; set; } = null!;
+        public DbSet<BayaBrix> BayasBrix { get; set; } = null!;
+        public DbSet<BayaDiametro> BayasDiametro { get; set; } = null!;
+        public DbSet<BayaPeso> BayasPeso { get; set; } = null!;
+        public DbSet<Poda> Podas { get; set; } = null!;
+        public DbSet<MuestraTipo> MuestraTipos { get; set; } = null!;
+
+        // Módulo de Seguridad
+        public DbSet<Usuario> Usuarios { get; set; } = null!;
+        public DbSet<Rol> Roles { get; set; } = null!;
+        public DbSet<UsuarioRol> UsuarioRoles { get; set; } = null!;
+        public DbSet<Modulo> Modulos { get; set; } = null!;
+        public DbSet<RolModulo> RolModulos { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Removed unused configurations
+            // Configuración Seguridad
+            modelBuilder.Entity<UsuarioRol>()
+                .HasKey(ur => new { ur.UsuarioId, ur.RolId });
+
+            modelBuilder.Entity<RolModulo>()
+                .HasOne(rm => rm.Rol)
+                .WithMany(r => r.RolModulos)
+                .HasForeignKey(rm => rm.RolId);
+
+            modelBuilder.Entity<RolModulo>()
+                .HasOne(rm => rm.Modulo)
+                .WithMany(m => m.RolModulos)
+                .HasForeignKey(rm => rm.ModuloId);
+
             // Domain agricultural entities - explicit configurations
             modelBuilder.ApplyConfiguration(new VariedadConfiguration());
             modelBuilder.ApplyConfiguration(new LoteConfiguration());
             modelBuilder.ApplyConfiguration(new CosechaConfiguration());
-            modelBuilder.ApplyConfiguration(new Muestra100Configuration());
-            modelBuilder.ApplyConfiguration(new Baya100Configuration());
-            modelBuilder.ApplyConfiguration(new MuestraBrixConfiguration());
             modelBuilder.ApplyConfiguration(new BayaBrixConfiguration());
         }
     }

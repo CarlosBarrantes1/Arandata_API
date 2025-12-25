@@ -71,6 +71,10 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 // Global exception handling middleware (normalize error responses JSON en español)
 app.UseMiddleware<Arandata.API.Middleware.ExceptionHandlingMiddleware>();
+
+// AGREGADO: Middleware de Control de Permisos por Rol y Módulo
+app.UseMiddleware<Arandata.API.Middleware.PermissionMiddleware>();
+
 app.UseRouting();
 app.UseAuthorization();
 

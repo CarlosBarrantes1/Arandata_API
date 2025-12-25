@@ -28,10 +28,15 @@ namespace Arandata.Infrastructure
             // Register DbContext as the non-generic service so repositories requesting DbContext are resolved
             services.AddScoped<Microsoft.EntityFrameworkCore.DbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
-            // Book and Loan repositories removed
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             // Repositories
             services.AddScoped<Arandata.Domain.Ports.Out.IVariedadRepository, VariedadRepository>();
+            services.AddScoped<Arandata.Domain.Ports.Out.IBayaBrixRepository, BayaBrixRepository>();
+            services.AddScoped<Arandata.Domain.Ports.Out.ICosechaRepository, CosechaRepository>();
+            services.AddScoped<Arandata.Domain.Ports.Out.ILoteRepository, LoteRepository>();
+            // Eliminadas referencias a repositorios legacy Baya100 y Muestra100
+            // Eliminada referencia a IMuestraBrixRepository y MuestraBrixRepository (legacy)
 
             return services;
         }
