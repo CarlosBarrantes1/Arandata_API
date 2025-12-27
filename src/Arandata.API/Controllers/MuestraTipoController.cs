@@ -15,7 +15,7 @@ namespace Arandata.API.Controllers
     }
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/muestras")]
     public class MuestraTipoController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -25,45 +25,21 @@ namespace Arandata.API.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateMuestraTipoRequest dto)
+        [HttpGet("{id_muestra}/tipos")]
+        public async Task<IActionResult> GetTipos(int id_muestra)
         {
-            if (!System.Enum.TryParse<TipoMuestra>(dto.tipo, true, out var tipoEnum))
-            {
-                return BadRequest(new { error = "Tipo de muestra inválido. Use DIAMETRO, PESO o BRIX." });
-            }
-
-            var muestraTipo = new MuestraTipo
-            {
-                MuestraId = dto.id_muestra,
-                Tipo = tipoEnum,
-                Cantidad = dto.cantidad
-            };
-
-            _context.MuestraTipos.Add(muestraTipo);
-            await _context.SaveChangesAsync();
-
-            return Created("", new
-            {
-                id_muestra_tipo = muestraTipo.Id,
-                id_muestra = muestraTipo.MuestraId,
-                tipo = muestraTipo.Tipo.ToString(),
-                cantidad = muestraTipo.Cantidad
-            });
+            return Ok(await _context.MuestraTipos.Where(t => t.MuestraId == id_muestra).ToListAsync());
         }
 
-        [HttpGet("muestra/{muestraId}")]
-        public async Task<IActionResult> GetByMuestra(int muestraId)
+        [HttpPost("{id_muestra}/tipos")]
+        public async Task<IActionResult> SetTipos(int id_muestra, [FromBody] List<MuestraTipo> tipos)
         {
-            var tipos = await _context.MuestraTipos
-                .Where(t => t.MuestraId == muestraId)
-                .Select(t => new
-                {
-                    id_muestra_tipo = t.Id,
-                    tipo = t.Tipo.ToString(),
-                    cantidad = t.Cantidad
-                })
-                .ToListAsync();
+            var existentes = _context.MuestraTipos.Where(t => t.MuestraId == id_muestra);
+            _context.MuestraTipos.RemoveRange(existentes);
+
+            foreach (var t in tipos) { t.MuestraId = id_muestra; }
+            _context.MuestraTipos.AddRange(tipos);
+            await _context.SaveChangesAsync();
             return Ok(tipos);
         }
     }

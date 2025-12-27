@@ -31,7 +31,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -39,7 +44,11 @@ builder.Services.AddSwaggerGen();
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .WithExposedHeaders("X-User-Id")); // Exponer headers personalizados si es necesario
 });
 
 var app = builder.Build();
@@ -69,13 +78,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-// Global exception handling middleware (normalize error responses JSON en español)
+
+// IMPORTANTE: El orden de los middlewares es crítico
+app.UseRouting();
+
+// Global exception handling middleware
 app.UseMiddleware<Arandata.API.Middleware.ExceptionHandlingMiddleware>();
 
 // AGREGADO: Middleware de Control de Permisos por Rol y Módulo
 app.UseMiddleware<Arandata.API.Middleware.PermissionMiddleware>();
 
-app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();

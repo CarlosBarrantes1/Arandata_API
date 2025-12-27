@@ -22,7 +22,8 @@ namespace Arandata.API.Middleware
             var method = context.Request.Method.ToUpper();
 
             // 1. Excluir rutas públicas (Login, Swagger, Seed)
-            if (path.Contains("/auth/") || path.Contains("/swagger") || path.Contains("/seed-security"))
+            // Corregido: path.Contains("/auth") para capturar /api/auth/login correctamente
+            if (path.Contains("/auth") || path.Contains("/swagger") || path.Contains("/seed-security"))
             {
                 await _next(context);
                 return;
@@ -38,24 +39,24 @@ namespace Arandata.API.Middleware
             }
 
             // 3. Identificar el Módulo basado en la ruta
-            string moduloCodigo = "";
-            if (path.Contains("/lote") || path.Contains("/variedad")) moduloCodigo = "LOT";
-            else if (path.Contains("/cosecha") || path.Contains("/poda")) moduloCodigo = "COS";
-            else if (path.Contains("/muestra") || path.Contains("/baya")) moduloCodigo = "MUE";
-            else if (path.Contains("/report")) moduloCodigo = "REP";
-            else if (path.Contains("/security")) moduloCodigo = "ADM";
+            string moduloNombre = "";
+            if (path.Contains("/lote") || path.Contains("/variedad")) moduloNombre = "Lotes";
+            else if (path.Contains("/cosecha") || path.Contains("/poda")) moduloNombre = "Cosechas";
+            else if (path.Contains("/muestra") || path.Contains("/baya")) moduloNombre = "Muestreos";
+            else if (path.Contains("/report")) moduloNombre = "Reportes";
+            else if (path.Contains("/security") || path.Contains("/usuario")) moduloNombre = "Usuarios";
 
-            if (string.IsNullOrEmpty(moduloCodigo))
+            if (string.IsNullOrEmpty(moduloNombre))
             {
                 await _next(context);
                 return;
             }
 
-            // 4. Verificar permisos en la base de datos
+            // 4. Verificar permisos en la base de datos usando el Nombre del módulo (según tu script)
             var permisos = await dbContext.UsuarioRoles
                 .Where(ur => ur.UsuarioId == userId)
                 .SelectMany(ur => ur.Rol!.RolModulos)
-                .Where(rm => rm.Modulo!.Codigo == moduloCodigo)
+                .Where(rm => rm.Modulo!.Nombre == moduloNombre)
                 .ToListAsync();
 
             bool tienePermiso = false;
@@ -72,7 +73,7 @@ namespace Arandata.API.Middleware
                 await context.Response.WriteAsJsonAsync(new
                 {
                     error = "Acceso Denegado",
-                    mensaje = $"No tienes permisos para realizar esta acción ({method}) en el módulo {moduloCodigo}."
+                    mensaje = $"No tienes permisos para realizar esta acción ({method}) en el módulo {moduloNombre}."
                 });
                 return;
             }

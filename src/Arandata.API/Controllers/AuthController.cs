@@ -29,17 +29,16 @@ namespace Arandata.API.Controllers
                     .ThenInclude(ur => ur.Rol)
                         .ThenInclude(r => r!.RolModulos)
                             .ThenInclude(rm => rm.Modulo)
-                .FirstOrDefaultAsync(u => u.Username == request.Username && u.Activo);
+                .FirstOrDefaultAsync(u => u.Correo == request.Username && u.Activo);
 
             if (usuario == null) return Unauthorized(new { error = "Usuario no encontrado o inactivo" });
 
-            // NOTA: En producción usar BCrypt para verificar el hash. Aquí simplificamos para el prompt.
-            if (usuario.PasswordHash != request.Password) return Unauthorized(new { error = "Contraseña incorrecta" });
+            if (usuario.Password != request.Password) return Unauthorized(new { error = "Contraseña incorrecta" });
 
             // Construir el mapa de permisos para el frontend
             var permisos = usuario.UsuarioRoles
                 .SelectMany(ur => ur.Rol!.RolModulos)
-                .GroupBy(rm => rm.Modulo!.Codigo)
+                .GroupBy(rm => rm.Modulo!.Nombre)
                 .Select(g => new
                 {
                     modulo = g.Key,
@@ -52,10 +51,25 @@ namespace Arandata.API.Controllers
             return Ok(new
             {
                 id = usuario.Id,
-                username = usuario.Username,
+                username = usuario.Nombre,
                 roles = usuario.UsuarioRoles.Select(ur => ur.Rol!.Nombre),
                 permisos = permisos
             });
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout() => Ok(new { message = "Sesión cerrada exitosamente" });
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe([FromHeader(Name = "X-User-Id")] int userId)
+        {
+            var usuario = await _context.Usuarios
+                .Include(u => u.UsuarioRoles).ThenInclude(ur => ur.Rol)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (usuario == null) return NotFound();
+
+            return Ok(new { id = usuario.Id, username = usuario.Nombre, roles = usuario.UsuarioRoles.Select(ur => ur.Rol!.Nombre) });
         }
     }
 }

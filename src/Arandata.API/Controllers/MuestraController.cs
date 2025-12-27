@@ -1,6 +1,7 @@
 using Arandata.Infrastructure.Persistence.Context;
 using Arandata.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,11 @@ namespace Arandata.API.Controllers
     public class CreateMuestraRequest
     {
         public int id_cosecha { get; set; }
-        public string fecha_muestreo { get; set; }
+        public string? fecha_muestreo { get; set; }
     }
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/muestras")]
     public class MuestraController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -133,6 +134,13 @@ namespace Arandata.API.Controllers
 
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet("/api/cosechas/{id_cosecha}/muestras")]
+        public async Task<IActionResult> GetByCosecha(int id_cosecha)
+        {
+            var muestras = await _context.Muestras.Where(m => m.CosechaId == id_cosecha).ToListAsync();
+            return Ok(muestras);
         }
     }
 }

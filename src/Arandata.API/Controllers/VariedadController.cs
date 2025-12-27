@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Arandata.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/variedades")]
     public class VariedadController : ControllerBase
     {
         private readonly IVariedadService _service;

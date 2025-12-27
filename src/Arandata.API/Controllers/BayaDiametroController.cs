@@ -22,7 +22,7 @@ namespace Arandata.API.Controllers
     }
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/diametros")]
     public class BayaDiametroController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -32,9 +32,10 @@ namespace Arandata.API.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateBayaDiametroRequest dto)
+        [HttpPost("muestras/{id_muestra}/diametros")]
+        public async Task<IActionResult> CreateForMuestra(int id_muestra, [FromBody] CreateBayaDiametroRequest dto)
         {
+            dto.id_muestra = id_muestra;
             var config = await _context.MuestraTipos
                 .FirstOrDefaultAsync(t => t.MuestraId == dto.id_muestra && t.Tipo == TipoMuestra.DIAMETRO);
 
@@ -91,16 +92,17 @@ namespace Arandata.API.Controllers
             return Ok(new { message = $"{nuevasBayas.Count} registros de Diámetro guardados.", total = conteoActual + nuevasBayas.Count });
         }
 
-        [HttpGet("muestra/{muestraId}")]
-        public async Task<IActionResult> GetByMuestra(int muestraId)
+        [HttpGet("muestras/{id_muestra}/diametros")]
+        public async Task<IActionResult> GetByMuestra(int id_muestra)
         {
             var bayas = await _context.BayasDiametro
-                .Where(b => b.MuestraId == muestraId)
+                .Where(b => b.MuestraId == id_muestra)
+                .OrderBy(b => b.NumeroBaya)
                 .ToListAsync();
             return Ok(bayas);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("diametros/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.BayasDiametro.FindAsync(id);

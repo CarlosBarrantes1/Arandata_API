@@ -25,7 +25,7 @@ namespace Arandata.API.Controllers
     }
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/brix")]
     public class BayaBrixController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -33,6 +33,13 @@ namespace Arandata.API.Controllers
         public BayaBrixController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        [HttpPost("muestras/{id_muestra}/brix")]
+        public async Task<IActionResult> CreateForMuestra(int id_muestra, [FromBody] CreateBayaBrixRequest dto)
+        {
+            dto.id_muestra = id_muestra;
+            return await Create(dto);
         }
 
         [HttpPost]
@@ -94,16 +101,24 @@ namespace Arandata.API.Controllers
             return Ok(new { message = $"{nuevasBayas.Count} registros de Brix guardados.", total = conteoActual + nuevasBayas.Count });
         }
 
-        [HttpGet("muestra/{muestraId}")]
-        public async Task<IActionResult> GetByMuestra(int muestraId)
+        [HttpGet("muestras/{id_muestra}/brix")]
+        public async Task<IActionResult> GetByMuestra(int id_muestra)
         {
-            var bayas = await _context.BayasBrix
-                .Where(b => b.MuestraId == muestraId)
-                .ToListAsync();
+            var bayas = await _context.BayasBrix.Where(b => b.MuestraId == id_muestra).ToListAsync();
             return Ok(bayas);
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("brix/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] CreateBayaBrixRequest dto)
+        {
+            var item = await _context.BayasBrix.FindAsync(id);
+            if (item == null) return NotFound();
+            item.Brix = dto.brix;
+            await _context.SaveChangesAsync();
+            return Ok(item);
+        }
+
+        [HttpDelete("brix/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.BayasBrix.FindAsync(id);

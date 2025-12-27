@@ -11,7 +11,7 @@ using System;
 namespace Arandata.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/cosechas")]
     public class CosechaController : ControllerBase
     {
         private readonly ICosechaService _service;
@@ -32,6 +32,16 @@ namespace Arandata.API.Controllers
             var item = await _service.GetByIdAsync(id);
             if (item == null) return NotFound();
             return Ok(item);
+        }
+
+        [HttpGet("lote/{id_lote}")]
+        public async Task<IActionResult> GetByLote(int id_lote)
+        {
+            var cosechas = await _context.Cosechas
+                .Where(c => c.LoteId == id_lote)
+                .OrderByDescending(c => c.FechaCosecha)
+                .ToListAsync();
+            return Ok(cosechas);
         }
 
         [HttpPost]

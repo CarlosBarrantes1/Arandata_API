@@ -23,7 +23,7 @@ namespace Arandata.API.Controllers
     }
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/pesos")]
     public class BayaPesoController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -33,23 +33,20 @@ namespace Arandata.API.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("muestras/{id_muestra}/pesos")]
+        public async Task<IActionResult> GetByMuestra(int id_muestra)
         {
-            // Lógica para obtener todos los registros
-            return Ok(new List<object>()); // Placeholder
+            var bayas = await _context.BayasPeso
+                .Where(b => b.MuestraId == id_muestra)
+                .OrderBy(b => b.NumeroBaya)
+                .ToListAsync();
+            return Ok(bayas);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpPost("muestras/{id_muestra}/pesos")]
+        public async Task<IActionResult> CreateForMuestra(int id_muestra, [FromBody] CreateBayaPesoRequest dto)
         {
-            // Lógica para obtener un registro por id
-            return Ok(new { }); // Placeholder
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateBayaPesoRequest dto)
-        {
+            dto.id_muestra = id_muestra;
             var config = await _context.MuestraTipos
                 .FirstOrDefaultAsync(t => t.MuestraId == dto.id_muestra && t.Tipo == TipoMuestra.PESO);
 
@@ -106,16 +103,7 @@ namespace Arandata.API.Controllers
             return Ok(new { message = $"{nuevasBayas.Count} registros de Peso guardados.", total = conteoActual + nuevasBayas.Count });
         }
 
-        [HttpGet("muestra/{muestraId}")]
-        public async Task<IActionResult> GetByMuestra(int muestraId)
-        {
-            var bayas = await _context.BayasPeso
-                .Where(b => b.MuestraId == muestraId)
-                .ToListAsync();
-            return Ok(bayas);
-        }
-
-        [HttpDelete("{id}")]
+        [HttpDelete("pesos/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.BayasPeso.FindAsync(id);

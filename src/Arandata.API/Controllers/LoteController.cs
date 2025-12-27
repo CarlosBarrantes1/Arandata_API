@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Arandata.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/lotes")]
     public class LoteController : ControllerBase
     {
         private readonly ILoteService _service;
@@ -38,6 +38,7 @@ namespace Arandata.API.Controllers
             var created = await _service.CreateAsync(dto);
 
             // Lógica Senior: Si el lote tiene fecha de poda inicial, registrarla en la tabla Podas automáticamente
+            // Nota: La columna fecha_poda no existe en la tabla 'lote', por eso se guarda en la tabla 'poda'
             if (dto.FechaPoda.HasValue)
             {
                 var podaExistente = await _context.Podas.AnyAsync(p => p.LoteId == created.idLote && p.FechaPoda == dto.FechaPoda.Value);
@@ -63,6 +64,13 @@ namespace Arandata.API.Controllers
         {
             await _service.DeleteAsync(id);
             return NoContent();
+        }
+
+        [HttpGet("por-variedad/{idVariedad}")]
+        public async Task<IActionResult> GetByVariedad(int idVariedad)
+        {
+            var lotes = await _context.Lotes.Where(l => l.VariedadId == idVariedad).ToListAsync();
+            return Ok(lotes);
         }
     }
 }

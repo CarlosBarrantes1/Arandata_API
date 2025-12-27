@@ -9,7 +9,7 @@ using System;
 namespace Arandata.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/reports")]
     public class ReportController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -158,6 +158,41 @@ namespace Arandata.API.Controllers
             .ToList();
 
             return Ok(alertas);
+        }
+
+        [HttpGet("lote/{idLote}")]
+        public async Task<IActionResult> GetDashboardLote(int idLote)
+        {
+            var lote = await _context.Lotes
+                .Include(l => l.Cosechas)
+                .FirstOrDefaultAsync(l => l.Id == idLote);
+
+            if (lote == null) return NotFound();
+
+            return Ok(new
+            {
+                nombre = lote.Nombre,
+                total_cosechado = lote.Cosechas.Sum(c => c.KgTotal),
+                rendimiento_promedio = lote.Cosechas.Average(c => c.KgPlanta),
+                ultima_cosecha = lote.Cosechas.OrderByDescending(c => c.FechaCosecha).FirstOrDefault()?.FechaCosecha
+            });
+        }
+
+        [HttpGet("cosecha/{idCosecha}")]
+        public async Task<IActionResult> GetDashboardCosecha(int idCosecha)
+        {
+            var cosecha = await _context.Cosechas
+                .Include(c => c.Muestras)
+                .FirstOrDefaultAsync(c => c.Id == idCosecha);
+
+            if (cosecha == null) return NotFound();
+
+            return Ok(new
+            {
+                fecha = cosecha.FechaCosecha,
+                kg_total = cosecha.KgTotal,
+                muestras_realizadas = cosecha.Muestras.Count
+            });
         }
     }
 }

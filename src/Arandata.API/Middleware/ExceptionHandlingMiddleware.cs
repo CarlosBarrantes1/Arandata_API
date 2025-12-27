@@ -1,4 +1,3 @@
-
 using Arandata.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +35,13 @@ namespace Arandata.API.Middleware
         {
             context.Response.ContentType = "application/json";
             int statusCode = (int)HttpStatusCode.InternalServerError;
-            string message = "Error interno del servidor";
+
+            // Mostrar el mensaje real del error para depuración
+            string message = exception.Message;
+            if (exception.InnerException != null)
+            {
+                message += " | Inner: " + exception.InnerException.Message;
+            }
 
             switch (exception)
             {

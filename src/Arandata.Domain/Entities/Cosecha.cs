@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Arandata.Domain.Entities
 {
@@ -14,5 +15,7 @@ namespace Arandata.Domain.Entities
         public decimal? KgPlantaAcumulado { get; set; }
         public int? DiasDespuesPoda { get; set; }
 
+        // Relación con Muestras
+        public ICollection<Muestra> Muestras { get; set; } = new List<Muestra>();
     }
 }

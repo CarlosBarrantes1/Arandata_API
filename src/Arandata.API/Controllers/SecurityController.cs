@@ -19,11 +19,60 @@ namespace Arandata.API.Controllers
             _context = context;
         }
 
+        // --- USUARIOS ---
         [HttpGet("usuarios")]
         public async Task<IActionResult> GetUsuarios() => Ok(await _context.Usuarios.Include(u => u.UsuarioRoles).ThenInclude(ur => ur.Rol).ToListAsync());
 
+        [HttpGet("usuarios/{id}")]
+        public async Task<IActionResult> GetUsuario(int id) => Ok(await _context.Usuarios.Include(u => u.UsuarioRoles).FirstOrDefaultAsync(u => u.Id == id));
+
+        [HttpPost("usuarios")]
+        public async Task<IActionResult> CreateUsuario([FromBody] Usuario user)
+        {
+            _context.Usuarios.Add(user);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetUsuario), new { id = user.Id }, user);
+        }
+
+        [HttpDelete("usuarios/{id}")]
+        public async Task<IActionResult> DeleteUsuario(int id)
+        {
+            var user = await _context.Usuarios.FindAsync(id);
+            if (user == null) return NotFound();
+            user.Activo = false; // Borrado lógico
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // --- ROLES Y PERMISOS ---
         [HttpGet("roles")]
         public async Task<IActionResult> GetRoles() => Ok(await _context.Roles.Include(r => r.RolModulos).ThenInclude(rm => rm.Modulo).ToListAsync());
+
+        [HttpGet("modulos")]
+        public async Task<IActionResult> GetModulos() => Ok(await _context.Modulos.ToListAsync());
+
+        [HttpPost("usuarios/{userId}/roles/{rolId}")]
+        public async Task<IActionResult> AssignRol(int userId, int rolId)
+        {
+            _context.UsuarioRoles.Add(new UsuarioRol { UsuarioId = userId, RolId = rolId });
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPut("roles/{rolId}/modulos/{moduloId}")]
+        public async Task<IActionResult> UpdatePermission(int rolId, int moduloId, [FromBody] RolModulo dto)
+        {
+            var perm = await _context.RolModulos.FirstOrDefaultAsync(rm => rm.RolId == rolId && rm.ModuloId == moduloId);
+            if (perm == null) return NotFound();
+
+            perm.PuedeVer = dto.PuedeVer;
+            perm.PuedeCrear = dto.PuedeCrear;
+            perm.PuedeEditar = dto.PuedeEditar;
+            perm.PuedeEliminar = dto.PuedeEliminar;
+
+            await _context.SaveChangesAsync();
+            return Ok(perm);
+        }
 
         [HttpPost("seed-security")]
         public async Task<IActionResult> SeedSecurity()
@@ -43,10 +92,10 @@ namespace Arandata.API.Controllers
             await _context.SaveChangesAsync();
 
             // 2. Crear Roles
-            var rolAdmin = new Rol { Nombre = "Administrador", Descripcion = "Gestión total" };
-            var rolIngeniero = new Rol { Nombre = "Ingeniero Agrónomo", Descripcion = "Acceso total a registros y reportes" };
-            var rolOperador = new Rol { Nombre = "Operador de Campo", Descripcion = "Registra datos de campo" };
-            var rolGerente = new Rol { Nombre = "Gerente", Descripcion = "Solo lectura de reportes" };
+            var rolAdmin = new Rol { Nombre = "Administrador" };
+            var rolIngeniero = new Rol { Nombre = "Ingeniero Agrónomo" };
+            var rolOperador = new Rol { Nombre = "Operador de Campo" };
+            var rolGerente = new Rol { Nombre = "Gerente" };
 
             _context.Roles.AddRange(rolAdmin, rolIngeniero, rolOperador, rolGerente);
             await _context.SaveChangesAsync();
@@ -80,7 +129,7 @@ namespace Arandata.API.Controllers
             await _context.SaveChangesAsync();
 
             // 4. Crear Usuario Inicial
-            var adminUser = new Usuario { Username = "admin", PasswordHash = "admin123", Email = "admin@arandata.com" };
+            var adminUser = new Usuario { Nombre = "admin", Password = "admin123", Correo = "admin@arandata.com" };
             _context.Usuarios.Add(adminUser);
             await _context.SaveChangesAsync();
 

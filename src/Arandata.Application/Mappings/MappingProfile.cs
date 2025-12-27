@@ -31,7 +31,6 @@ namespace Arandata.Application.Mappings
                 .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
                 .ForMember(dest => dest.VariedadId, opt => opt.MapFrom(src => src.variedadId))
                 .ForMember(dest => dest.FechaSiembra, opt => opt.MapFrom(src => src.FechaSiembra))
-                .ForMember(dest => dest.FechaPoda, opt => opt.MapFrom(src => src.FechaPoda))
                 .ForMember(dest => dest.PlantasTotales, opt => opt.MapFrom(src => src.PlantasTotales))
                 .ForMember(dest => dest.Hectareas, opt => opt.MapFrom(src => src.Hectareas));
 
